@@ -117,8 +117,10 @@ set(SPM_SRCS
   unigram_model.cc
   util.cc
   word_model.cc
+  sentencepiece_processor_c.h
+  sentencepiece_processor_c.cc
   ${ABSL_STRINGS_SRCS}
-  ${ABSL_FLAGS_SRCS})
+  ${ABSL_FLAGS_SRCS} )
 
 set(SPM_TRAIN_SRCS
   ${SPM_PROTO_HDRS}
@@ -200,20 +202,34 @@ if (SPM_ENABLE_TCMALLOC)
   endif()
 endif()
 
-if (SPM_ENABLE_SHARED)
-  add_library(sentencepiece SHARED ${SPM_SRCS})
-  add_library(sentencepiece_train SHARED ${SPM_TRAIN_SRCS})
+if (SPM_ENABLE_SHARED_LIB)
+  if(SPM_BUILD_ENCODER_LIB)
+    add_library(sentencepiece SHARED ${SPM_SRCS})
+  endif()
+  if(SPM_ENABLE_TRAINER)
+    add_library(sentencepiece_train SHARED ${SPM_TRAIN_SRCS})
+  endif()
+endif()
+if(SPM_BUILD_ENCODER_LIB)
+    add_library(sentencepiece-static STATIC ${SPM_SRCS})
+endif()
+if(SPM_ENABLE_TRAINER)
+    add_library(sentencepiece_train-static STATIC ${SPM_TRAIN_SRCS})
+endif()
+if(SPM_BUILD_ENCODER_LIB)
+    target_link_libraries(sentencepiece-static INTERFACE ${SPM_LIBS})
+endif()
+if(SPM_ENABLE_TRAINER)
+    target_link_libraries(sentencepiece_train-static INTERFACE sentencepiece-static ${SPM_LIBS})
 endif()
 
-add_library(sentencepiece-static STATIC ${SPM_SRCS})
-add_library(sentencepiece_train-static STATIC ${SPM_TRAIN_SRCS})
-
-target_link_libraries(sentencepiece-static INTERFACE ${SPM_LIBS})
-target_link_libraries(sentencepiece_train-static INTERFACE sentencepiece-static ${SPM_LIBS})
-
-if (SPM_ENABLE_SHARED)
-  target_link_libraries(sentencepiece ${SPM_LIBS})
-  target_link_libraries(sentencepiece_train ${SPM_LIBS} sentencepiece)
+if (SPM_ENABLE_SHARED_LIB)
+  if(SPM_BUILD_ENCODER_LIB)
+    target_link_libraries(sentencepiece ${SPM_LIBS})
+  endif()
+  if(SPM_ENABLE_TRAINER)
+    target_link_libraries(sentencepiece_train ${SPM_LIBS} sentencepiece)
+  endif()
   if ((${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l") OR
       (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "mips") OR
       (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "m68k") OR
@@ -221,25 +237,70 @@ if (SPM_ENABLE_SHARED)
       (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "sh4"))
     list(APPEND SPM_LIBS "atomic")
   endif()
-  set(SPM_INSTALLTARGETS sentencepiece sentencepiece_train sentencepiece-static sentencepiece_train-static)
-  set_target_properties(sentencepiece sentencepiece_train PROPERTIES SOVERSION 0 VERSION 0.0.0)
+
+  if(SPM_ENABLE_TRAINER AND SPM_BUILD_ENCODER_LIB)
+    set(SPM_INSTALLTARGETS sentencepiece sentencepiece_train sentencepiece-static sentencepiece_train-static)
+  endif()
+
+  if(SPM_BUILD_ENCODER_LIB)
+    set(SPM_INSTALLTARGETS sentencepiece sentencepiece-static)
+  endif()
+
+  if(SPM_ENABLE_TRAINER)
+    set(SPM_INSTALLTARGETS sentencepiece_train sentencepiece_train-static)
+  endif()
+
+  if(SPM_ENABLE_TRAINER AND SPM_BUILD_ENCODER_LIB)
+    set_target_properties(sentencepiece sentencepiece_train PROPERTIES SOVERSION 0 VERSION 0.0.0)
+  endif()
+
+  if(SPM_ENABLE_TRAINER)
+    set_target_properties(sentencepiece_train PROPERTIES SOVERSION 0 VERSION 0.0.0)
+  endif()
+
+  if(SPM_BUILD_ENCODER_LIB)
+    set_target_properties(sentencepiece PROPERTIES SOVERSION 0 VERSION 0.0.0)
+  endif()
+  if(SPM_BUILD_ENCODER_LIB)
   set_target_properties(sentencepiece PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS YES)
-  set_target_properties(sentencepiece_train PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS YES)
+  endif()
+  if(SPM_ENABLE_TRAINER)
+    set_target_properties(sentencepiece_train PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS YES)
+  endif()
   if (MSVC)
+    if(SPM_BUILD_ENCODER_LIB)
     set_target_properties(sentencepiece PROPERTIES IMPORT_SUFFIX "_import.lib")
-    set_target_properties(sentencepiece_train PROPERTIES IMPORT_SUFFIX "_import.lib")
+    endif()
+
+    if(SPM_ENABLE_TRAINER)
+        set_target_properties(sentencepiece_train PROPERTIES IMPORT_SUFFIX "_import.lib")
+    endif()
+
   elseif (MINGW)
-    set_target_properties(sentencepiece PROPERTIES IMPORT_SUFFIX ".dll.a")
-    set_target_properties(sentencepiece_train PROPERTIES IMPORT_SUFFIX ".dll.a")
+    if(SPM_BUILD_ENCODER_LIB)
+        set_target_properties(sentencepiece PROPERTIES IMPORT_SUFFIX ".dll.a")
+    endif()
+
+    if(SPM_ENABLE_TRAINER)
+        set_target_properties(sentencepiece_train PROPERTIES IMPORT_SUFFIX ".dll.a")
+    endif()
   endif()
 else()
-  add_library(sentencepiece ALIAS sentencepiece-static)
-  add_library(sentencepiece_train ALIAS sentencepiece_train-static)
-  set(SPM_INSTALLTARGETS sentencepiece-static sentencepiece_train-static)
+  if(SPM_BUILD_ENCODER_LIB)
+    add_library(sentencepiece ALIAS sentencepiece-static)
+  endif()
+  if(SPM_ENABLE_TRAINER)
+    add_library(sentencepiece_train ALIAS sentencepiece_train-static)
+  endif()
+  if(SPM_ENABLE_EXECUTBLES)
+    set(SPM_INSTALLTARGETS sentencepiece-static sentencepiece_train-static)
+  endif()
 endif()
 
 set_target_properties(sentencepiece-static PROPERTIES OUTPUT_NAME "sentencepiece")
-set_target_properties(sentencepiece_train-static PROPERTIES OUTPUT_NAME "sentencepiece_train")
+if(SPM_ENABLE_TRAINER)
+    set_target_properties(sentencepiece_train-static PROPERTIES OUTPUT_NAME "sentencepiece_train")
+endif()
 
 if (NOT MSVC)
   if (SPM_COVERAGE)
@@ -259,42 +320,46 @@ if (NOT MSVC)
     PROPERTIES COMPILE_FLAGS "-Wno-misleading-indentation")
   set_source_files_properties(${SPM_TEST_SRCS}
     PROPERTIES COMPILE_FLAGS "-Wno-sign-compare")
-  if (SPM_ENABLE_SHARED)
+  if (SPM_ENABLE_SHARED_LIB)
     set_property(TARGET sentencepiece APPEND_STRING PROPERTY COMPILE_FLAGS " -DPIC")
-    set_property(TARGET sentencepiece_train APPEND_STRING PROPERTY COMPILE_FLAGS " -DPIC")
+    if(SPM_ENABLE_TRAINER)
+        set_property(TARGET sentencepiece_train APPEND_STRING PROPERTY COMPILE_FLAGS " -DPIC")
+    endif()
   endif()
 endif()
+if(SPM_ENABLE_EXECUTBLES)
+    add_executable(spm_encode spm_encode_main.cc)
+    add_executable(spm_decode spm_decode_main.cc)
+    add_executable(spm_normalize spm_normalize_main.cc)
+    add_executable(spm_train spm_train_main.cc)
+    add_executable(spm_export_vocab spm_export_vocab_main.cc)
 
-add_executable(spm_encode spm_encode_main.cc)
-add_executable(spm_decode spm_decode_main.cc)
-add_executable(spm_normalize spm_normalize_main.cc)
-add_executable(spm_train spm_train_main.cc)
-add_executable(spm_export_vocab spm_export_vocab_main.cc)
-
-target_link_libraries(spm_encode sentencepiece)
-target_link_libraries(spm_decode sentencepiece)
-target_link_libraries(spm_normalize sentencepiece sentencepiece_train)
-target_link_libraries(spm_train sentencepiece sentencepiece_train)
-target_link_libraries(spm_export_vocab sentencepiece)
+    target_link_libraries(spm_encode sentencepiece)
+    target_link_libraries(spm_decode sentencepiece)
+    target_link_libraries(spm_normalize sentencepiece sentencepiece_train)
+    target_link_libraries(spm_train sentencepiece sentencepiece_train)
+    target_link_libraries(spm_export_vocab sentencepiece)
+endif()
 
 if (SPM_ENABLE_NFKC_COMPILE)
   add_executable(compile_charsmap compile_charsmap_main.cc)
   target_link_libraries(compile_charsmap sentencepiece sentencepiece_train)
 endif()
 
-list(APPEND SPM_INSTALLTARGETS
-  spm_encode spm_decode spm_normalize spm_train spm_export_vocab)
+if(SPM_ENABLE_EXECUTBLES)
+    list(APPEND SPM_INSTALLTARGETS
+      spm_encode spm_decode spm_normalize spm_train spm_export_vocab)
 
-install(TARGETS ${SPM_INSTALLTARGETS}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(FILES sentencepiece_trainer.h sentencepiece_processor.h
-  DESTINATION ${CMAKE_INSTALL_INCDIR})
-if (NOT SPM_USE_BUILTIN_PROTOBUF)
-  install(FILES ${SPM_PROTO_HDRS} DESTINATION ${CMAKE_INSTALL_INCDIR})
+    install(TARGETS ${SPM_INSTALLTARGETS}
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(FILES sentencepiece_trainer.h sentencepiece_processor.h
+      DESTINATION ${CMAKE_INSTALL_INCDIR})
+    if (NOT SPM_USE_BUILTIN_PROTOBUF)
+      install(FILES ${SPM_PROTO_HDRS} DESTINATION ${CMAKE_INSTALL_INCDIR})
+    endif()
 endif()
-
 file(TO_NATIVE_PATH "${PROJECT_SOURCE_DIR}/data" data_dir)
 
 if (SPM_BUILD_TEST OR SPM_COVERAGE)

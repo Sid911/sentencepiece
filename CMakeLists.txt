@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.!
 
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 file(STRINGS "VERSION.txt" SPM_VERSION)
 message(STATUS "VERSION: ${SPM_VERSION}")
-project(sentencepiece VERSION ${SPM_VERSION} LANGUAGES C CXX)
+project(sentencepiece LANGUAGES C CXX)
 
 option(SPM_ENABLE_NFKC_COMPILE "Enables NFKC compile" OFF)
-option(SPM_ENABLE_SHARED "Builds shared libaries in addition to static libraries." ON)
+option(SPM_BUILD_ENCODER_LIB "Build SPM Enconder libraries Note (in case ON) : Will cause error if SPM_ENABLE_EXECUTBLES is ON " ON)
+option(SPM_ENABLE_TRAINER "Builds SPM Trainer libraries Note (in case OFF) : Will cause error if SPM_ENABLE_EXECUTBLES is ON " OFF)
+option(SPM_ENABLE_SHARED_LIB "Builds shared libaries in addition to static libraries." ON)
+option(SPM_ENABLE_EXECUTBLES "Builds binaries executables for windows" OFF)
 option(SPM_BUILD_TEST "Builds test binaries." OFF)
 option(SPM_COVERAGE "Runs gcov to test coverage." OFF)
 option(SPM_ENABLE_TENSORFLOW_SHARED "Makes a tensorflow compatible shared file." OFF)
@@ -116,7 +118,6 @@ set(CPACK_PACKAGE_VERSION "${SPM_VERSION}")
 set(CPACK_STRIP_FILES TRUE)
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/README.md")
-set(CPACK_PACKAGE_CONTACT "taku@google.com")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Taku Kudo")
+set(CPACK_PACKAGE_CONTACT "siddevs@outlook.com")
 set(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/;/dist/;/sdist/;~$;${CPACK_SOURCE_IGNORE_FILES}")
 include(CPack)
