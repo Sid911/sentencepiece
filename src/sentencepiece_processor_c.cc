@@ -1,5 +1,5 @@
 #include "sentencepiece_processor_c.h"
-void* sentencepiceInit() {
+void* sentencepieceInit() {
 	return new sentencepiece::SentencePieceProcessor;
 }
 
@@ -17,12 +17,12 @@ void loadModelFile(void* processorhandle, char* filename) {
 	processor->LoadOrDie(filename);
 }
 
-bool checkModelLoaded(void* processorhandle) { 
+int checkModelLoaded(void* processorhandle) { 
 	auto processor = static_cast<sentencepiece::SentencePieceProcessor*> (processorhandle);
 	if (processor->status().code() == sentencepiece::util::StatusCode::kOk) {
-		return true;
+		return 1;
 	}
-	return false;
+	return 0;
 };
 
 void resetVocabulary(void* processorhandle) {
@@ -37,7 +37,7 @@ struct Int32Array encodeAsIds(void* processorhandle, char* input) {
 	return c_result;
 }
 
-struct string_array encodeAsPieces(void* processorhandle, char* input) {
+struct StringArray encodeAsPieces(void* processorhandle, char* input) {
 	auto processor = static_cast<sentencepiece::SentencePieceProcessor*> (processorhandle);
 	auto result =  processor->EncodeAsPieces(input);
 	std::vector<char*> cstrings{};
