@@ -2,10 +2,10 @@
 This is a experimental fork of original Sentencepiece project modified for use in **Sentencepiece Dart** wrapper package. For more documentation look at the package page.
 
 Modifications made :
-- Added C wrapper for the original sentencepiece_processor.h in file sentencepiece_processor_c.h.
+- Added C wrapper for the original C++ header[sentencepiece_processor.h](./src/sentencepiece_processor.h) in file [sentencepiece_processor_c.h](./src/sentencepiece_processor_c.h).
 - Changed Cmake File for option to add quick options to turn on or off builds of *static* and *shared* library.
     > This might cause error for `SPM_ENABLE_EXECUTBLES` option if enabled as this repo is not focused on it.
-- Removed a bit of logging temporily in common.cc which was causing error during android compilation.
+- Removed a bit of logging temporily in [common.cc](./third_party/protobuf-lite/common.cc#L148-L163) which was causing error during android compilation.
 
 # SentencePiece (Google) Original
 
