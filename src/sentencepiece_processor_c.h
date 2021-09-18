@@ -100,5 +100,20 @@ extern "C"{
 	/// <param name="processorhandle"> : Pointer to the stored 'sentecepiece Processor' object.</param>
 	/// <returns>Returns StringArray struct.</returns>
 	struct StringArray encodeAsPieces(void* processorhandle, char* input);
+	/// <summary>
+	/// Takes a vocab ID and returns its piece
+	/// </summary>
+	/// <param name="processorhandle"> : Pointer to the stored 'sentecepiece Processor' object.</param>
+	/// <param name="piece"> : piece to return ID for</param>
+	/// <returns>Returns vocab ID to the given piece or 0 if not found</returns>
+	int pieceToID(void* processorhandle, char* piece);
+	/// <summary>
+	/// Takes a piece and returns its respective vocab ID
+	/// </summary>
+	/// <param name="processorhandle"> : Pointer to the stored 'sentecepiece Processor' object.</param>
+	/// <param name="id"> : vocab ID to return a piece for </param>
+	/// <returns> Returns piece accociated with the given vocab ID (no checks if the id is not avaiable)
+	/// </returns>
+	const char* idToPiece(void* processorhandle, int id);
 
 }

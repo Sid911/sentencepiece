@@ -63,6 +63,15 @@ struct StringArray encodeAsPieces(void* processorhandle, char* input) {
 	return createStringArray(cstrings.data(), cstrings.size());
 }
 
+int pieceToID(void* processorhandle, char* piece) {
+	auto processor = static_cast<sentencepiece::SentencePieceProcessor*> (processorhandle);
+	return processor->PieceToId(piece);
+}
+
+const char* idToPiece(void* processorhandle, int id) {
+	auto processor = static_cast<sentencepiece::SentencePieceProcessor*> (processorhandle);
+	return processor->IdToPiece(id).c_str();
+}
 //struct string_array decodeFromIds(void* processorhandle,int* ids) {
 //	//Todo: Remember to implement
 //}
