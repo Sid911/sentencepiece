@@ -1,4 +1,6 @@
 # Sentenpiece Dart wrapper source
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae7af5f09f9e401981a92379ebc7a0ae)](https://app.codacy.com/gh/Sid911/sentencepiece?utm_source=github.com&utm_medium=referral&utm_content=Sid911/sentencepiece&utm_campaign=Badge_Grade_Settings)
+[![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 This is a experimental fork of original Sentencepiece project modified for use in **Sentencepiece Dart** wrapper package. For more documentation look at the package page.
 
 Modifications made :
@@ -8,10 +10,6 @@ Modifications made :
 - Removed a bit of logging temporily in [common.cc](./third_party/protobuf-lite/common.cc#L148-L163) which was causing error during android compilation.
 
 # SentencePiece (Google) Original
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae7af5f09f9e401981a92379ebc7a0ae)](https://app.codacy.com/gh/Sid911/sentencepiece?utm_source=github.com&utm_medium=referral&utm_content=Sid911/sentencepiece&utm_campaign=Badge_Grade_Settings)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 
 SentencePiece is an unsupervised text tokenizer and detokenizer mainly for
 Neural Network-based text generation systems where the vocabulary size
