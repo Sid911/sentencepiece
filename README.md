@@ -9,6 +9,7 @@ Modifications made :
 
 # SentencePiece (Google) Original
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae7af5f09f9e401981a92379ebc7a0ae)](https://app.codacy.com/gh/Sid911/sentencepiece?utm_source=github.com&utm_medium=referral&utm_content=Sid911/sentencepiece&utm_campaign=Badge_Grade_Settings)
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 
